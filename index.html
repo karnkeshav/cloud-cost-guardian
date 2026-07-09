@@ -401,8 +401,8 @@
             try {
                 const { data, error } = await supabaseClient
                     .from('cloud_billing_reports')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                    .select('*');
+
 
                 if (error) throw error;
 
