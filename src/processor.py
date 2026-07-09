@@ -24,7 +24,14 @@ def process_csv(file_path):
         db_payload = {
             "resource_id": row.get('lineItem/ResourceId'),
             "product_code": row.get('lineItem/ProductCode'),
-            "unblended_cost": float(row.get('lineItem/UnblendedCost', 0)),
+            "unblended_cost": float(row.get('lineItem/UnblendedCost', 0)) if pd.notna(row.get('lineItem/UnblendedCost')) else 0.0,
+            "billing_start_date": row.get('bill/BillingPeriodStartDate') if pd.notna(row.get('bill/BillingPeriodStartDate')) else None,
+            "billing_end_date": row.get('bill/BillingPeriodEndDate') if pd.notna(row.get('bill/BillingPeriodEndDate')) else None,
+            "usage_account_id": str(row.get('lineItem/UsageAccountId')) if pd.notna(row.get('lineItem/UsageAccountId')) else None,
+            "usage_type": row.get('lineItem/UsageType') if pd.notna(row.get('lineItem/UsageType')) else None,
+            "usage_amount": float(row.get('lineItem/UsageAmount', 0)) if pd.notna(row.get('lineItem/UsageAmount')) else 0.0,
+            "line_item_description": row.get('lineItem/LineItemDescription') if pd.notna(row.get('lineItem/LineItemDescription')) else None,
+            "region": row.get('product/region') if pd.notna(row.get('product/region')) else None,
             "bucket_category": ai_result.get('bucket'),
             "ai_reasoning": ai_result.get('reasoning'),
             "resolver_group": ai_result.get('resolver_group'),
@@ -33,6 +40,7 @@ def process_csv(file_path):
             "severity": ai_result.get('severity'),
             "status": "processed"
         }
+
 
         
         # 2. Act: Insert into Supabase
