@@ -29,3 +29,14 @@ def insert_report_data(data_list):
         # Returning a dictionary allows your main script to handle errors gracefully
         return {"success": False, "error": str(e)}
 
+def insert_ticket_data(data_list):
+    """Inserts a list of dictionaries into the Supabase remediation_tickets table."""
+    try:
+        client = get_supabase_client()
+        response = client.table("remediation_tickets").insert(data_list).execute()
+        return {"success": True, "data": response}
+    except Exception as e:
+        print(f"Error inserting ticket into Supabase: {e}")
+        return {"success": False, "error": str(e)}
+
+

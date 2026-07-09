@@ -654,8 +654,9 @@
 
             try {
                 const { data, error } = await supabaseClient
-                    .from('cloud_billing_reports')
+                    .from('remediation_tickets')
                     .select('*');
+
 
                 if (error) throw error;
 
