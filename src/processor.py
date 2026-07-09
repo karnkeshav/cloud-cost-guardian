@@ -9,6 +9,10 @@ def process_csv(file_path):
     # Filter for pending rows only
     pending_rows = df[df['status'] == 'pending']
     
+    if pending_rows.empty:
+        print("No pending rows to process.")
+        return
+    
     for index, row in pending_rows.iterrows():
         # Convert row to a clean JSON string for the AI
         resource_json = row.to_json()
@@ -30,10 +34,14 @@ def process_csv(file_path):
         result = insert_report_data([db_payload])
         
         if result and result.get("success"):
+            df.at[index, 'status'] = 'processed'
+            df.at[index, 'decision'] = ai_result.get('bucket')
+            df.to_csv(file_path, index=False)
             print(f"Successfully processed resource: {db_payload['resource_id']}")
         else:
-            print(f"Failed to process: {db_payload['resource_id']}")
+            print(f"Failed to process: {db_payload['resource_id']}. Error: {result.get('error') if result else 'Unknown'}")
 
 if __name__ == "__main__":
     # Point this to your data path
     process_csv('data/raw/cur_report_updated.csv')
+
