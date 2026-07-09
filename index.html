@@ -24,15 +24,21 @@
             
             /* Status Colors */
             --color-idle: #ef4444;
-            --color-idle-bg: rgba(239, 68, 68, 0.15);
+            --color-idle-bg: rgba(239, 68, 68, 0.12);
             --color-oversized: #f59e0b;
-            --color-oversized-bg: rgba(245, 158, 11, 0.15);
+            --color-oversized-bg: rgba(245, 158, 11, 0.12);
             --color-orphaned: #a855f7;
-            --color-orphaned-bg: rgba(168, 85, 247, 0.15);
-            --color-misconfigured: #eab308;
-            --color-misconfigured-bg: rgba(234, 179, 8, 0.15);
+            --color-orphaned-bg: rgba(168, 85, 247, 0.12);
+            --color-misconfigured: #ec4899;
+            --color-misconfigured-bg: rgba(236, 72, 153, 0.12);
             --color-unknown: #64748b;
-            --color-unknown-bg: rgba(100, 116, 139, 0.15);
+            --color-unknown-bg: rgba(100, 116, 139, 0.12);
+
+            /* Severity Colors */
+            --color-sev-critical: #ef4444;
+            --color-sev-high: #f97316;
+            --color-sev-medium: #eab308;
+            --color-sev-low: #10b981;
         }
 
         * {
@@ -211,8 +217,13 @@
             vertical-align: middle;
         }
 
+        tr {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
         tr:hover td {
-            background-color: rgba(255, 255, 255, 0.02);
+            background-color: rgba(255, 255, 255, 0.03);
         }
 
         /* Badges */
@@ -248,13 +259,42 @@
         .tag-misconfigured {
             background-color: var(--color-misconfigured-bg);
             color: var(--color-misconfigured);
-            border-color: rgba(234, 179, 8, 0.2);
+            border-color: rgba(236, 72, 153, 0.2);
         }
 
         .tag-unknown {
             background-color: var(--color-unknown-bg);
             color: var(--color-unknown);
             border-color: rgba(100, 116, 139, 0.2);
+        }
+
+        /* Severity Tags */
+        .severity-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .sev-critical { background: rgba(239, 68, 68, 0.15); color: var(--color-sev-critical); border: 1px solid rgba(239, 68, 68, 0.25); }
+        .sev-high { background: rgba(249, 115, 22, 0.15); color: var(--color-sev-high); border: 1px solid rgba(249, 115, 22, 0.25); }
+        .sev-medium { background: rgba(234, 179, 8, 0.15); color: var(--color-sev-medium); border: 1px solid rgba(234, 179, 8, 0.25); }
+        .sev-low { background: rgba(16, 185, 129, 0.15); color: var(--color-sev-low); border: 1px solid rgba(16, 185, 129, 0.25); }
+
+        /* Resolver Badges */
+        .resolver-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .cost-col {
@@ -270,6 +310,160 @@
             border-radius: 4px;
             color: #cbd5e1;
             font-size: 0.85rem;
+        }
+
+        .action-btn {
+            background: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary-hover);
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #0f172a;
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 650px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-title h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f8fafc;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-title p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.75rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: #f8fafc;
+        }
+
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .modal-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .modal-meta-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .modal-meta-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .modal-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .modal-section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 0.25rem;
+        }
+
+        .modal-section-body {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+            white-space: pre-wrap;
         }
 
         /* States */
@@ -324,11 +518,11 @@
                 <span class="stat-value" id="statSavings">$0.00</span>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Resources Analyzed</span>
+                <span class="stat-label">Open Remediation Tickets</span>
                 <span class="stat-value" id="statCount">0</span>
             </div>
             <div class="stat-card">
-                <span class="stat-label">Critical Recommendations</span>
+                <span class="stat-label">Critical & High Priority</span>
                 <span class="stat-value" id="statCritical">0</span>
             </div>
         </div>
@@ -363,11 +557,59 @@
                             <th>Product</th>
                             <th>Cost</th>
                             <th>Category</th>
-                            <th>AI Reasoning</th>
+                            <th>Resolver Group</th>
+                            <th>Severity</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div id="ticketModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h3 id="mTicketTitle">Remediate Resource</h3>
+                    <p>REMEDIATION TICKET DETAILS</p>
+                </div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Meta Info Grid -->
+                <div class="modal-meta-grid">
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Resource ID</span>
+                        <span class="modal-meta-value" id="mResourceId">-</span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Product / Service</span>
+                        <span class="modal-meta-value" id="mProductCode">-</span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Monthly Waste Cost</span>
+                        <span class="modal-meta-value" id="mCost">-</span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Assigned Resolver Group</span>
+                        <span class="modal-meta-value" id="mResolverGroup">-</span>
+                    </div>
+                </div>
+
+                <!-- Analysis Summary -->
+                <div class="modal-section">
+                    <span class="modal-section-title">AI Analysis / Reasoning</span>
+                    <p class="modal-section-body" id="mReasoning">-</p>
+                </div>
+
+                <!-- Remediation steps -->
+                <div class="modal-section">
+                    <span class="modal-section-title">Step-by-Step Remediation Instructions</span>
+                    <p class="modal-section-body" id="mRemediation">-</p>
+                </div>
             </div>
         </div>
     </div>
@@ -377,8 +619,10 @@
         const SUPABASE_URL = 'https://yagecbzykodypgjkaazo.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_JkfpUKTHBirzTLILyZOlGg_iGfucFgm';
 
-        // Resolve reference error by using a unique client instance name
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Store retrieved data globally to access on modal pop-ups
+        let reportData = [];
 
         // Map database categories to CSS classes
         function getCategoryClass(category) {
@@ -389,6 +633,16 @@
             if (cat.includes('orphan')) return 'tag-orphaned';
             if (cat.includes('misconfigured') || cat.includes('compliant')) return 'tag-misconfigured';
             return 'tag-unknown';
+        }
+
+        // Map severity levels to CSS badges
+        function getSeverityClass(severity) {
+            if (!severity) return 'sev-low';
+            const sev = severity.toLowerCase();
+            if (sev.includes('critical')) return 'sev-critical';
+            if (sev.includes('high')) return 'sev-high';
+            if (sev.includes('medium') || sev.includes('med')) return 'sev-medium';
+            return 'sev-low';
         }
 
         async function fetchData() {
@@ -403,7 +657,6 @@
                     .from('cloud_billing_reports')
                     .select('*');
 
-
                 if (error) throw error;
 
                 loadingEl.classList.add('hidden');
@@ -413,6 +666,8 @@
                     return;
                 }
 
+                reportData = data;
+
                 // Update Stats Overview
                 let totalSavings = 0;
                 let criticalCount = 0;
@@ -420,24 +675,28 @@
                 const tbody = document.getElementById('tableBody');
                 tbody.innerHTML = ''; // Clear previous contents
 
-                data.forEach(row => {
+                data.forEach((row, index) => {
                     const costVal = parseFloat(row.unblended_cost) || 0;
                     totalSavings += costVal;
                     
-                    // Count critical actions (idle and misconfigured resources)
-                    const cat = (row.bucket_category || '').toLowerCase();
-                    if (cat.includes('idle') || cat.includes('misconfigured')) {
+                    const sev = (row.severity || 'Low').toLowerCase();
+                    if (sev.includes('critical') || sev.includes('high')) {
                         criticalCount++;
                     }
 
                     const tagClass = getCategoryClass(row.bucket_category);
+                    const sevClass = getSeverityClass(row.severity);
+                    const resolver = row.resolver_group || 'Unassigned';
+                    const ticketTitle = row.ticket_title || 'Remediate Resource';
 
-                    tbody.innerHTML += `<tr>
+                    tbody.innerHTML += `<tr onclick="openModal(${index})">
                         <td><span class="resource-id-col">${escapeHtml(row.resource_id)}</span></td>
                         <td>${escapeHtml(row.product_code)}</td>
                         <td class="cost-col">$${costVal.toFixed(4)}</td>
                         <td><span class="bucket-tag ${tagClass}">${escapeHtml(row.bucket_category || 'Unclassified')}</span></td>
-                        <td>${escapeHtml(row.ai_reasoning || 'No analysis details provided.')}</td>
+                        <td><span class="resolver-badge">${escapeHtml(resolver)}</span></td>
+                        <td><span class="severity-badge ${sevClass}">${escapeHtml(row.severity || 'Low')}</span></td>
+                        <td><button class="action-btn" onclick="event.stopPropagation(); openModal(${index});">View Ticket</button></td>
                     </tr>`;
                 });
 
@@ -452,6 +711,34 @@
                 loadingEl.classList.add('hidden');
                 errorMsg.innerText = `Database Connection Error: ${err.message || err}`;
                 errorEl.classList.remove('hidden');
+            }
+        }
+
+        // Modal triggers
+        function openModal(index) {
+            const row = reportData[index];
+            if (!row) return;
+
+            document.getElementById('mTicketTitle').innerText = row.ticket_title || 'Remediate Resource';
+            document.getElementById('mResourceId').innerText = row.resource_id || '-';
+            document.getElementById('mProductCode').innerText = row.product_code || '-';
+            document.getElementById('mCost').innerText = `$${(parseFloat(row.unblended_cost) || 0).toFixed(4)}`;
+            document.getElementById('mResolverGroup').innerText = row.resolver_group || 'Unassigned';
+            document.getElementById('mReasoning').innerText = row.ai_reasoning || 'No analysis details provided.';
+            document.getElementById('mRemediation').innerText = row.ticket_description || 'No detailed remediation steps provided.';
+
+            document.getElementById('ticketModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('ticketModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside of modal card
+        window.onclick = function(event) {
+            const modal = document.getElementById('ticketModal');
+            if (event.target === modal) {
+                closeModal();
             }
         }
 

@@ -22,14 +22,32 @@ def get_gemini_client():
 class ClassificationResult(BaseModel):
     bucket: str
     reasoning: str
+    resolver_group: str
+    ticket_title: str
+    ticket_description: str
+    severity: str
 
 def classify_resource(resource_json):
     prompt = f"""
     Analyze the following cloud resource usage data and classify it into one of these 4 buckets:
     'Idle Resource', 'Oversized/Rightsizing', 'Orphaned Resource', or 'Misconfigured/Non-compliant'.
     
-    Data: {resource_json}
+    Determine the following details for cost optimization:
+    1. **bucket**: The category from the 4 buckets above.
+    2. **reasoning**: Brief analysis explaining why this classification was chosen.
+    3. **resolver_group**: Assign to the most appropriate team:
+       - 'DevOps/Compute Team' for Compute, EC2, Lambda, Autoscaling, etc.
+       - 'Storage & Database Team' for RDS, S3, EBS, DynamoDB, backups, etc.
+       - 'Security & Compliance Team' for IAM, misconfigured Security Groups, or non-compliant policies.
+       - 'Finance Team' for Tax, fees, or general cost allocations.
+    4. **ticket_title**: A concise, action-oriented ticket title (e.g., 'Decommission Idle EBS Volume: vol-012b').
+    5. **ticket_description**: Clear, step-by-step remediation instructions for the resolver group to optimize this resource.
+    6. **severity**: Choose from 'Low', 'Medium', 'High', or 'Critical' based on the potential cost wastage or security impact.
+    
+    Data to analyze:
+    {resource_json}
     """
+
     
     try:
         client = get_gemini_client()
