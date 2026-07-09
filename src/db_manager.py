@@ -5,18 +5,27 @@ from dotenv import load_dotenv
 # Load environment variables (GitHub Secrets or .env)
 load_dotenv()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+_supabase_client = None
 
-# Initialize Supabase client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+def get_supabase_client() -> Client:
+    """Returns the initialized Supabase client, lazily creating it if needed."""
+    global _supabase_client
+    if _supabase_client is None:
+        supabase_url = os.getenv("SUPABASE_URL")
+        supabase_key = os.getenv("SUPABASE_KEY")
+        if not supabase_url or not supabase_key:
+            raise ValueError("SUPABASE_URL and SUPABASE_KEY environment variables must be configured.")
+        _supabase_client = create_client(supabase_url, supabase_key)
+    return _supabase_client
 
 def insert_report_data(data_list):
     """Inserts a list of dictionaries into the Supabase table with success tracking."""
     try:
-        response = supabase.table("cloud_billing_reports").insert(data_list).execute()
+        client = get_supabase_client()
+        response = client.table("cloud_billing_reports").insert(data_list).execute()
         return {"success": True, "data": response}
     except Exception as e:
         print(f"Error inserting into Supabase: {e}")
         # Returning a dictionary allows your main script to handle errors gracefully
         return {"success": False, "error": str(e)}
+
