@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cloud Cost Guardian Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #f4f7f6; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #2c3e50; color: white; }
+        .bucket-tag { padding: 5px 10px; border-radius: 4px; font-size: 0.8em; color: white; }
+        .idle { background-color: #e74c3c; } /* Red for Idle */
+        .oversized { background-color: #f39c12; } /* Orange for Oversized */
+    </style>
+</head>
+<body>
+    <h1>Cloud Cost Guardian: Resolver Dashboard</h1>
+    <table id="reportTable">
+        <thead>
+            <tr>
+                <th>Resource ID</th>
+                <th>Product</th>
+                <th>Cost</th>
+                <th>Category</th>
+                <th>Reasoning</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        // Replace with your actual Supabase credentials (or use env variables in a build process)
+        const supabase = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
+
+        async function fetchData() {
+            const { data, error } = await supabase.from('cloud_billing_reports').select('*');
+            if (error) console.error(error);
+            
+            const tbody = document.getElementById('tableBody');
+            data.forEach(row => {
+                tbody.innerHTML += `<tr>
+                    <td>${row.resource_id}</td>
+                    <td>${row.product_code}</td>
+                    <td>$${row.unblended_cost}</td>
+                    <td><span class="bucket-tag idle">${row.bucket_category}</span></td>
+                    <td>${row.ai_reasoning}</td>
+                </tr>`;
+            });
+        }
+        fetchData();
+    </script>
+</body>
+</html>
