@@ -4,7 +4,8 @@ on:
   push:
     paths:
       - 'data/raw/cur_report_updated.csv'
-      
+  workflow_dispatch: # Allows manual execution from the GitHub Actions UI
+
 
 # Prevents multiple runs from queuing up
 concurrency:
