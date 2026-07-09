@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'data/raw/cur_report_updated.csv'
+      
 
 # Prevents multiple runs from queuing up
 concurrency:
