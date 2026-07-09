@@ -27,8 +27,13 @@ def process_csv(file_path):
             "unblended_cost": float(row.get('lineItem/UnblendedCost', 0)),
             "bucket_category": ai_result.get('bucket'),
             "ai_reasoning": ai_result.get('reasoning'),
+            "resolver_group": ai_result.get('resolver_group'),
+            "ticket_title": ai_result.get('ticket_title'),
+            "ticket_description": ai_result.get('ticket_description'),
+            "severity": ai_result.get('severity'),
             "status": "processed"
         }
+
         
         # 2. Act: Insert into Supabase
         result = insert_report_data([db_payload])
