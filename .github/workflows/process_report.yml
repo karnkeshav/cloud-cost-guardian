@@ -3,7 +3,7 @@ name: Process Billing Report
 on:
   push:
     paths:
-      - 'data/raw/cur_report_updated.csv'
+      - 'data/raw/*.csv'
   workflow_dispatch: # Allows manual execution from the GitHub Actions UI
 
 

@@ -1,8 +1,9 @@
+import glob
 import pandas as pd
 from agent import classify_resource
 from db_manager import insert_report_data, insert_ticket_data, get_processed_resource_periods
 
-def process_csv(file_path):
+def process_csv(file_path, processed_periods=None):
     """Reads the CSV, processes each row via Gemini, and saves to Supabase."""
     df = pd.read_csv(file_path)
 
@@ -10,14 +11,15 @@ def process_csv(file_path):
     pending_rows = df[df['status'] == 'pending']
 
     if pending_rows.empty:
-        print("No pending rows to process.")
+        print(f"No pending rows to process in {file_path}.")
         return
 
     # GitHub Actions runners are ephemeral, so the local CSV's 'status' column
     # doesn't survive between runs. Cross-check against Supabase (the durable
     # store) so re-running against the same CSV doesn't reclassify or
     # double-insert resources already processed for their billing period.
-    processed_periods = get_processed_resource_periods()
+    if processed_periods is None:
+        processed_periods = get_processed_resource_periods()
 
     for index, row in pending_rows.iterrows():
         billing_start = str(row.get('bill/BillingPeriodStartDate') or '')[:10]
@@ -89,7 +91,10 @@ def process_csv(file_path):
         print(f"Successfully processed resource & created ticket for: {billing_payload['resource_id']}")
 
 if __name__ == "__main__":
-    # Point this to your data path
-    process_csv('data/raw/cur_report_updated.csv')
+    # Process every CUR CSV dropped into data/raw/, not just one fixed filename,
+    # so new monthly reports don't need to overwrite/rename a specific file.
+    processed_periods = get_processed_resource_periods()
+    for csv_path in sorted(glob.glob('data/raw/*.csv')):
+        process_csv(csv_path, processed_periods)
 
 
